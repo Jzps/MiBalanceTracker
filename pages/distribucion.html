@@ -1,0 +1,77 @@
+<section class="modulo-cabecera">
+    <div>
+        <h1>Distribución 50/30/20</h1>
+        <p>Referencia para dividir tu ingreso entre necesidades, deseos y ahorro.</p>
+    </div>
+</section>
+
+<div class="rejilla rejilla-2">
+    <!-- RN-14: la distribución se presenta como referencia orientativa -->
+    <section class="tarjeta">
+        <h2>Tu referencia actual</h2>
+        <p class="campo-ayuda">Porcentajes de referencia del método 50/30/20.</p>
+
+        <div class="rejilla rejilla-3">
+            <div class="mini-dato">
+                <span class="mini-dato-etiqueta">Necesidades</span>
+                <strong>50 %</strong>
+            </div>
+            <div class="mini-dato">
+                <span class="mini-dato-etiqueta">Deseos</span>
+                <strong>30 %</strong>
+            </div>
+            <div class="mini-dato">
+                <span class="mini-dato-etiqueta">Ahorro</span>
+                <strong>20 %</strong>
+            </div>
+        </div>
+
+        <p class="pie-tabla">
+            El ingreso fijo mensual se configura en
+            <a href="index.php?page=configuracion">Configuración</a>.
+        </p>
+    </section>
+
+    <!-- RF-24: personalización de la distribución -->
+    <section class="tarjeta">
+        <h2>Personalizar porcentajes</h2>
+        <form class="formulario" action="actions/distribucion.php" method="post">
+            <input type="hidden" name="accion" value="guardar_distribucion">
+
+            <div class="rejilla rejilla-3 rejilla-ajustada">
+                <div class="campo">
+                    <label for="porcentaje_necesidades">Necesidades %</label>
+                    <input type="number" id="porcentaje_necesidades" name="porcentaje_necesidades"
+                           min="0" max="100" step="1" required value="50">
+                </div>
+                <div class="campo">
+                    <label for="porcentaje_deseos">Deseos %</label>
+                    <input type="number" id="porcentaje_deseos" name="porcentaje_deseos"
+                           min="0" max="100" step="1" required value="30">
+                </div>
+                <div class="campo">
+                    <label for="porcentaje_ahorro">Ahorro %</label>
+                    <input type="number" id="porcentaje_ahorro" name="porcentaje_ahorro"
+                           min="0" max="100" step="1" required value="20">
+                </div>
+            </div>
+
+            <p class="campo-ayuda">La suma de los tres porcentajes debe ser exactamente 100 %.</p>
+
+            <div class="acciones-formulario">
+                <button type="submit" class="btn btn-primario">Guardar distribución</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<!-- Espacio reservado para comparar la referencia con los gastos reales -->
+<section class="tarjeta">
+    <h2>Referencia vs. gasto real</h2>
+    <ul class="lista-progreso">
+    </ul>
+    <div class="estado-vacio">
+        <h3>No hay datos registrados</h3>
+        <p>Aún no hay gastos registrados.</p>
+    </div>
+</section>

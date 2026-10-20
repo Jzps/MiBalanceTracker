@@ -1,0 +1,83 @@
+<section class="modulo-cabecera">
+    <div>
+        <h1>Configuración</h1>
+        <p>Consulta y modifica la información básica de tu cuenta y tu ingreso fijo mensual.</p>
+    </div>
+</section>
+
+<div class="rejilla rejilla-2">
+    <!-- RN-03: ingreso fijo mensual -->
+    <section class="tarjeta tarjeta-destacada">
+        <h2>Ingreso fijo mensual</h2>
+        <p>Valor actual: <strong>Sin definir</strong></p>
+        <p class="campo-ayuda">Referencia para el Dashboard y la distribución 50/30/20.</p>
+
+        <form class="formulario" action="actions/configuracion.php" method="post">
+            <input type="hidden" name="accion" value="guardar_ingreso">
+            <div class="campo">
+                <label for="ingreso_fijo_mensual">Nuevo ingreso fijo mensual *</label>
+                <div class="campo-moneda">
+                    <span aria-hidden="true">$</span>
+                    <input type="number" id="ingreso_fijo_mensual" name="ingreso_fijo_mensual"
+                           min="1" step="0.01" required inputmode="decimal" placeholder=" ">
+                </div>
+            </div>
+            <div class="acciones-formulario">
+                <button type="submit" class="btn btn-primario">Guardar ingreso</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- RF-25: información de la cuenta -->
+    <section class="tarjeta">
+        <h2>Información de la cuenta</h2>
+
+        <form class="formulario" action="actions/configuracion.php" method="post">
+            <input type="hidden" name="accion" value="guardar_perfil">
+
+            <div class="campo">
+                <label for="nombre">Nombre *</label>
+                <input type="text" id="nombre" name="nombre" required maxlength="100"
+                       autocomplete="name" placeholder=" ">
+            </div>
+
+            <div class="campo">
+                <label for="correo">Correo electrónico *</label>
+                <input type="email" id="correo" name="correo" required maxlength="120"
+                       autocomplete="email" placeholder=" ">
+            </div>
+
+            <div class="acciones-formulario">
+                <button type="submit" class="btn btn-secundario">Guardar cambios</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<!-- RF-24: preferencias de la distribución -->
+<section class="tarjeta">
+    <div class="tarjeta-cabecera">
+        <h2>Preferencias de distribución</h2>
+        <a class="enlace-mas" href="index.php?page=distribucion">Modificar porcentajes</a>
+    </div>
+
+    <div class="rejilla rejilla-3">
+        <div class="mini-dato">
+            <span class="mini-dato-etiqueta">Necesidades</span>
+            <strong>50 %</strong>
+        </div>
+        <div class="mini-dato">
+            <span class="mini-dato-etiqueta">Deseos</span>
+            <strong>30 %</strong>
+        </div>
+        <div class="mini-dato">
+            <span class="mini-dato-etiqueta">Ahorro</span>
+            <strong>20 %</strong>
+        </div>
+    </div>
+
+    <p class="pie-tabla">
+        Los porcentajes deben sumar exactamente el 100 %. Modificarlos cambia los valores de
+        referencia y no altera los movimientos históricos.
+    </p>
+</section>

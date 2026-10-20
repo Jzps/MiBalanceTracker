@@ -1,0 +1,113 @@
+<section class="modulo-cabecera">
+    <div>
+        <h1>Deudas</h1>
+        <p>Registra tus obligaciones financieras, consulta el saldo pendiente y controla los pagos.</p>
+    </div>
+</section>
+
+<div class="rejilla rejilla-formulario">
+    <!-- RF-17: registro de deudas -->
+    <section class="tarjeta">
+        <h2>Nueva deuda</h2>
+        <form class="formulario" action="actions/deudas.php" method="post">
+            <input type="hidden" name="accion" value="crear_deuda">
+
+            <div class="campo">
+                <label for="acreedor">Acreedor *</label>
+                <input type="text" id="acreedor" name="acreedor" required maxlength="150" placeholder=" ">
+            </div>
+
+            <div class="rejilla rejilla-2 rejilla-ajustada">
+                <div class="campo">
+                    <label for="monto_inicial">Monto inicial *</label>
+                    <div class="campo-moneda">
+                        <span aria-hidden="true">$</span>
+                        <input type="number" id="monto_inicial" name="monto_inicial" min="0.01" step="0.01" required
+                               inputmode="decimal" placeholder=" ">
+                    </div>
+                </div>
+                <div class="campo">
+                    <label for="fecha_vencimiento">Fecha de vencimiento *</label>
+                    <input type="date" id="fecha_vencimiento" name="fecha_vencimiento" required>
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="pago_minimo">Pago mínimo mensual</label>
+                <div class="campo-moneda">
+                    <span aria-hidden="true">$</span>
+                    <input type="number" id="pago_minimo" name="pago_minimo" min="0" step="0.01" value="0"
+                           inputmode="decimal" placeholder=" ">
+                </div>
+            </div>
+
+            <div class="acciones-formulario">
+                <button type="submit" class="btn btn-primario">Registrar deuda</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- RF-18: registro de pagos -->
+    <section class="tarjeta">
+        <h2>Registrar pago</h2>
+        <form class="formulario" action="actions/deudas.php" method="post">
+            <input type="hidden" name="accion" value="crear_pago">
+
+            <div class="campo">
+                <label for="id_deuda">Deuda *</label>
+                <select id="id_deuda" name="id_deuda" required>
+                    <option value="">Sin deudas registradas</option>
+                </select>
+            </div>
+
+            <div class="rejilla rejilla-2 rejilla-ajustada">
+                <div class="campo">
+                    <label for="monto_pago">Monto pagado *</label>
+                    <div class="campo-moneda">
+                        <span aria-hidden="true">$</span>
+                        <input type="number" id="monto_pago" name="monto" min="0.01" step="0.01" required
+                               inputmode="decimal" placeholder=" ">
+                    </div>
+                </div>
+                <div class="campo">
+                    <label for="fecha_pago">Fecha *</label>
+                    <input type="date" id="fecha_pago" name="fecha" required>
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="descripcion_pago">Descripción</label>
+                <input type="text" id="descripcion_pago" name="descripcion" maxlength="150" placeholder=" ">
+            </div>
+
+            <div class="acciones-formulario">
+                <button type="submit" class="btn btn-primario">Registrar pago</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<!-- Espacio reservado para el listado de deudas y sus pagos -->
+<section class="tarjeta">
+    <h2>Mis deudas</h2>
+    <div class="tabla-contenedor">
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th scope="col">Acreedor</th>
+                    <th scope="col" class="num">Monto inicial</th>
+                    <th scope="col" class="num">Pagado</th>
+                    <th scope="col" class="num">Saldo pendiente</th>
+                    <th scope="col" class="num">Pago mínimo</th>
+                    <th scope="col">Vencimiento</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="estado-vacio">
+        <h3>Sin deudas</h3>
+        <p>Aún no tienes deudas registradas. Registra la primera con el formulario.</p>
+    </div>
+</section>

@@ -1,0 +1,113 @@
+<section class="modulo-cabecera">
+    <div>
+        <h1>Metas y fondo de emergencia</h1>
+        <p>Define objetivos de ahorro, registra aportes y sigue tu progreso.</p>
+    </div>
+</section>
+
+<div class="rejilla rejilla-formulario">
+    <div>
+        <!-- RF-13: creación de metas de ahorro -->
+        <section class="tarjeta">
+            <h2>Nueva meta</h2>
+            <form class="formulario" action="actions/metas.php" method="post">
+                <input type="hidden" name="accion" value="crear_meta">
+
+                <div class="campo">
+                    <label for="tipo_meta">Tipo *</label>
+                    <select id="tipo_meta" name="tipo_meta" required>
+                        <option value="meta_ahorro">Meta de ahorro</option>
+                        <option value="fondo_emergencia">Fondo de emergencia</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="nombre">Nombre de la meta *</label>
+                    <input type="text" id="nombre" name="nombre" required maxlength="100" placeholder=" ">
+                </div>
+
+                <div class="rejilla rejilla-2 rejilla-ajustada">
+                    <div class="campo">
+                        <label for="monto_objetivo">Monto objetivo *</label>
+                        <div class="campo-moneda">
+                            <span aria-hidden="true">$</span>
+                            <input type="number" id="monto_objetivo" name="monto_objetivo" min="1" step="0.01" required
+                                   inputmode="decimal" placeholder=" ">
+                        </div>
+                    </div>
+                    <div class="campo">
+                        <label for="fecha_objetivo">Fecha objetivo *</label>
+                        <input type="date" id="fecha_objetivo" name="fecha_objetivo" required>
+                    </div>
+                </div>
+
+                <div class="acciones-formulario">
+                    <button type="submit" class="btn btn-primario">Crear meta</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- RF-15: aportes a metas y fondo de emergencia -->
+        <section class="tarjeta">
+            <h2>Registrar aporte</h2>
+            <form class="formulario" action="actions/metas.php" method="post">
+                <input type="hidden" name="accion" value="crear_aporte">
+
+                <div class="campo">
+                    <label for="id_meta">Meta *</label>
+                    <select id="id_meta" name="id_meta" required>
+                        <option value="">Selecciona...</option>
+                    </select>
+                </div>
+
+                <div class="rejilla rejilla-2 rejilla-ajustada">
+                    <div class="campo">
+                        <label for="monto_aporte">Monto del aporte *</label>
+                        <div class="campo-moneda">
+                            <span aria-hidden="true">$</span>
+                            <input type="number" id="monto_aporte" name="monto" min="0.01" step="0.01" required
+                                   inputmode="decimal" placeholder=" ">
+                        </div>
+                    </div>
+                    <div class="campo">
+                        <label for="fecha_aporte">Fecha *</label>
+                        <input type="date" id="fecha_aporte" name="fecha" required>
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <label for="nota_aporte">Nota</label>
+                    <input type="text" id="nota_aporte" name="nota" maxlength="255" placeholder=" ">
+                </div>
+
+                <div class="acciones-formulario">
+                    <button type="submit" class="btn btn-primario">Registrar aporte</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <div>
+        <!-- RF-14: gestión del fondo de emergencia -->
+        <section class="tarjeta tarjeta-destacada">
+            <h2>Fondo de emergencia</h2>
+            <ul class="lista-progreso">
+            </ul>
+            <div class="estado-vacio">
+                <h3>Sin fondo configurado</h3>
+                <p>Establece el monto objetivo y la fecha del fondo de emergencia.</p>
+            </div>
+        </section>
+
+        <!-- RF-16: progreso de las metas -->
+        <section class="tarjeta">
+            <h2>Progreso de mis metas</h2>
+            <ul class="lista-progreso">
+            </ul>
+            <div class="estado-vacio">
+                <h3>Sin metas</h3>
+                <p>Aún no tienes metas de ahorro. Crea la primera con el formulario.</p>
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,66 @@
+<section class="modulo-cabecera">
+    <div>
+        <h1>Presupuestos</h1>
+        <p>Define límites de gasto por categoría y período, y controla tu consumo.</p>
+    </div>
+</section>
+
+<div class="rejilla rejilla-formulario">
+    <!-- RF-10: creación de presupuestos -->
+    <section class="tarjeta">
+        <h2>Nuevo presupuesto</h2>
+        <form class="formulario" action="actions/presupuestos.php" method="post">
+            <input type="hidden" name="accion" value="crear">
+
+            <div class="campo">
+                <label for="id_categoria">Categoría *</label>
+                <select id="id_categoria" name="id_categoria" required>
+                    <option value="">Selecciona...</option>
+                </select>
+            </div>
+
+            <div class="rejilla rejilla-2 rejilla-ajustada">
+                <div class="campo">
+                    <label for="fecha_inicio">Fecha de inicio *</label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+                </div>
+                <div class="campo">
+                    <label for="fecha_fin">Fecha de fin *</label>
+                    <input type="date" id="fecha_fin" name="fecha_fin" required>
+                </div>
+            </div>
+
+            <div class="rejilla rejilla-2 rejilla-ajustada">
+                <div class="campo">
+                    <label for="monto_limite">Límite del presupuesto *</label>
+                    <div class="campo-moneda">
+                        <span aria-hidden="true">$</span>
+                        <input type="number" id="monto_limite" name="monto_limite" min="1" step="0.01" required
+                               inputmode="decimal" placeholder=" ">
+                    </div>
+                </div>
+                <div class="campo">
+                    <label for="porcentaje_alerta">Alerta al %</label>
+                    <input type="number" id="porcentaje_alerta" name="porcentaje_alerta" min="1" max="100" step="1"
+                           value="80" required>
+                </div>
+            </div>
+
+            <div class="acciones-formulario">
+                <button type="reset" class="btn btn-fantasma">Limpiar</button>
+                <button type="submit" class="btn btn-primario">Crear presupuesto</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- RF-11 / RF-12: espacio reservado para el progreso de los presupuestos -->
+    <section class="tarjeta">
+        <h2>Mis presupuestos</h2>
+        <ul class="lista-progreso">
+        </ul>
+        <div class="estado-vacio">
+            <h3>Sin presupuestos</h3>
+            <p>Aún no tienes presupuestos. Crea uno con el formulario.</p>
+        </div>
+    </section>
+</div>
