@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\MovimientoController;
+use App\Http\Controllers\PresupuestoController;
 use App\Http\Middleware\Auth\EnsureIngresoFijoConfigurado;
 use Illuminate\Support\Facades\Route;
 
@@ -53,19 +56,21 @@ Route::middleware(['auth', EnsureIngresoFijoConfigurado::class])->group(function
         ]);
     })->name('dashboard');
 
-    Route::get('/movimientos', function () {
-        return view('pages.movimientos.index', [
-            'tituloPagina' => 'Movimientos',
-            'paginaActiva' => 'movimientos',
-        ]);
-    })->name('movimientos');
+    // Movimientos y categorías (la administración de categorías vive en la vista de movimientos).
+    Route::get('/movimientos', [MovimientoController::class, 'index'])->name('movimientos');
+    Route::post('/movimientos', [MovimientoController::class, 'store'])->name('movimientos.store');
+    Route::put('/movimientos/{movimiento}', [MovimientoController::class, 'update'])->name('movimientos.update');
+    Route::delete('/movimientos/{movimiento}', [MovimientoController::class, 'destroy'])->name('movimientos.destroy');
 
-    Route::get('/presupuestos', function () {
-        return view('pages.presupuestos.index', [
-            'tituloPagina' => 'Presupuestos',
-            'paginaActiva' => 'presupuestos',
-        ]);
-    })->name('presupuestos');
+    Route::post('/categorias', [CategoriaController::class, 'store'])->name('categorias.store');
+    Route::put('/categorias/{categoria}', [CategoriaController::class, 'update'])->name('categorias.update');
+    Route::delete('/categorias/{categoria}', [CategoriaController::class, 'destroy'])->name('categorias.destroy');
+
+    // Presupuestos.
+    Route::get('/presupuestos', [PresupuestoController::class, 'index'])->name('presupuestos');
+    Route::post('/presupuestos', [PresupuestoController::class, 'store'])->name('presupuestos.store');
+    Route::put('/presupuestos/{presupuesto}', [PresupuestoController::class, 'update'])->name('presupuestos.update');
+    Route::delete('/presupuestos/{presupuesto}', [PresupuestoController::class, 'destroy'])->name('presupuestos.destroy');
 
     Route::get('/metas', function () {
         return view('pages.metas.index', [

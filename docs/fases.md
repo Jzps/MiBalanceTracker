@@ -176,6 +176,97 @@ CRUD de movimientos, categorías, presupuestos, metas, aportes, deudas y pagos; 
 
 ---
 
+## Fase 4 — CRUD de Movimientos, Categorías y Presupuestos
+
+### A. Responsabilidad
+
+Conecta el frontend existente con MySQL para que tres módulos sean funcionales: registrar/consultar/editar/eliminar movimientos, administrar categorías propias (crear, editar, desactivar/activar) y gestionar presupuestos con progreso y alertas calculados desde movimientos reales. No incluye metas, aportes, deudas, pagos, Dashboard, Análisis ni Distribución funcionales.
+
+### B. Archivos creados
+
+| Archivo | Responsabilidad | Métodos |
+|---|---|---|
+| `app/Http/Controllers/MovimientoController.php` | Listado con filtros, alta, edición y baja de movimientos propios; valida categoría activa, propia y compatible con el tipo. | `index`, `store`, `update`, `destroy` |
+| `app/Http/Controllers/CategoriaController.php` | Alta, edición y desactivación lógica de categorías propias. | `store`, `update`, `destroy` |
+| `app/Http/Controllers/PresupuestoController.php` | Alta, edición, baja y cálculo de progreso/alertas de presupuestos propios. | `index`, `store`, `update`, `destroy` |
+| `tests/Feature/ModulosTestCase.php` | Base de pruebas con `RefreshDatabase` y helpers para crear usuarios/categorías. | — |
+| `tests/Feature/Movimientos/MovimientoTest.php` | 9 pruebas de movimientos. | — |
+| `tests/Feature/Categorias/CategoriaTest.php` | 9 pruebas de categorías. | — |
+| `tests/Feature/Presupuestos/PresupuestoTest.php` | 11 pruebas de presupuestos y cálculos. | — |
+| `tests/Feature/Presupuestos/IntegracionUsuariosTest.php` | Prueba conjunta de aislamiento entre dos usuarios. | — |
+
+### C. Archivos modificados
+
+| Archivo | Motivo |
+|---|---|
+| `routes/web.php` | Las rutas GET de Movimientos y Presupuestos ahora apuntan a sus controladores; se añadieron rutas POST/PUT/DELETE para los tres módulos, dentro del grupo privado con `auth` + `ingreso.configurado`. |
+| `resources/views/pages/movimientos/index.blade.php` | Conectar formulario, filtros, tabla y acciones; mostrar mensajes/errores; incorporar la administración de categorías sin nueva página. |
+| `resources/views/pages/presupuestos/index.blade.php` | Conectar formulario, listado, progreso, alertas y acciones; mostrar mensajes/errores. |
+| `public/assets/js/app.js` | Ya no cancela el envío de formularios con acción real; mantiene solo los formularios visuales sin backend y añade filtrado mínimo de categorías por tipo. |
+| `docs/fases.md` | Esta sección. |
+| `README.md` | Referencia a pruebas y módulos operativos (sin cambiar instalación/ejecución). |
+
+### D. Controladores
+
+- **MovimientoController**: `index` filtra por usuario y opcionalmente por búsqueda, tipo y mes; carga `categoria` y prepara datos para edición. `store`/`update` validan y asignan `id_usuario` desde `Auth::id()`. `destroy` bloquea la eliminación si existe `pagoDeuda`.
+- **CategoriaController**: `store`/`update` validan ENUM y coherencia de tipo frente a movimientos y presupuestos existentes. `destroy` realiza baja lógica (`activa = false`); `update` con `activa=1` reactiva.
+- **PresupuestoController**: `index` calcula gasto, disponible, porcentaje y estado por presupuesto. `store`/`update` validan categoría de gasto propia y activa, montos y fechas. `destroy` elimina solo el presupuesto.
+
+### E. Modelos
+
+Se reutilizan sin cambios `Movimiento`, `Categoria` y `Presupuesto` (tablas, PKs, `$fillable`, casts y relaciones de Fase 2), junto con `Usuario` para la identidad. No se crearon modelos nuevos. `Movimiento::pagoDeuda()` se consulta solo para proteger la integridad en la eliminación.
+
+### F. Rutas
+
+| Método | URL | Nombre | Operación |
+|---|---|---|---|
+| GET | `/movimientos` | `movimientos` | Listado (admite `buscar`, `tipo`, `mes`, `editar`, `editar_categoria`) |
+| POST | `/movimientos` | `movimientos.store` | Registrar movimiento |
+| PUT | `/movimientos/{movimiento}` | `movimientos.update` | Actualizar movimiento |
+| DELETE | `/movimientos/{movimiento}` | `movimientos.destroy` | Eliminar movimiento |
+| POST | `/categorias` | `categorias.store` | Crear categoría |
+| PUT | `/categorias/{categoria}` | `categorias.update` | Editar / reactivar categoría |
+| DELETE | `/categorias/{categoria}` | `categorias.destroy` | Desactivar categoría |
+| GET | `/presupuestos` | `presupuestos` | Listado con progreso (admite `editar`) |
+| POST | `/presupuestos` | `presupuestos.store` | Crear presupuesto |
+| PUT | `/presupuestos/{presupuesto}` | `presupuestos.update` | Actualizar presupuesto |
+| DELETE | `/presupuestos/{presupuesto}` | `presupuestos.destroy` | Eliminar presupuesto |
+
+### G. Integración con frontend
+
+Los formularios conservan sus clases, IDs y etiquetas; se añadieron `@csrf`, `@method`, `action` con `route()`, `old()` y `@error`. Las tablas muestran los registros reales y acciones con botones `btn btn-fantasma btn-pequeno`. Los mensajes usan `alerta alerta-info` / `alerta alerta-error` y los estados de presupuesto usan `etiqueta`, `barra` y `barra-relleno` con `--valor`. La administración de categorías se ubica dentro de la vista de Movimientos, sin nuevo módulo en el menú.
+
+### H. Relaciones
+
+`Usuario` → `movimientos`, `categorias` y `presupuestos` por `id_usuario`. `Categoria` → `movimientos` y `presupuestos` por `id_categoria`. `Movimiento` → `categoria` para mostrar el nombre; `Presupuesto` → `categoria` y, mediante consulta agregada, a los movimientos del mismo usuario/categoría/tipo/período.
+
+### I. Seguridad
+
+Todas las consultas usan `where('id_usuario', Auth::id())`. Los registros ajenos devuelven 404 (`findOrFail`). `id_usuario` nunca se toma del formulario. Las categorías se validan por propiedad, `activa = true` y `tipo_movimiento`; los presupuestos solo admiten categorías de gasto. Los filtros y parámetros de edición también se restringen al usuario autenticado.
+
+### J. Cálculos y alertas
+
+- Gasto = suma de `movimiento.monto` con mismo usuario, categoría, `tipo = gasto` y `fecha` entre `fecha_inicio` y `fecha_fin` (inclusive).
+- Disponible = `monto_limite - gastado` (puede ser negativo).
+- Porcentaje = `(gastado / monto_limite) * 100` (sin tope en 100%).
+- Excedente: `gastado > monto_limite` (prioridad).
+- Preventivo: `porcentaje >= porcentaje_alerta` y sin excedente.
+- Normal: por debajo del umbral. Los valores se calculan en cada consulta; no se almacenan columnas derivadas ni cachés.
+
+### K. Eliminaciones y conservación histórica
+
+Las categorías se desactivan (`activa = false`) en lugar de borrarse, conservando movimientos y presupuestos históricos; los selectores de altas solo muestran activas. Un movimiento vinculado a `pago_deuda` no se elimina. Eliminar un presupuesto no afecta movimientos. Cambiar el tipo de una categoría se bloquea si existen relaciones incompatibles.
+
+### L. Pruebas
+
+`php artisan test`: **57 pruebas, 271 aserciones, todas pasan** (27 de autenticación + 30 nuevas). Las pruebas usan `sistema_gestion_financiera_auth_test`, nunca la base principal. Cubren altas, consultas, ediciones, bajas, validaciones, ENUM, baja lógica, aislamiento por usuario, cálculo de gastos, umbrales, excedentes y recálculo tras modificar/eliminar movimientos.
+
+### M. Relación con fases siguientes
+
+Los movimientos y categorías ya registrados estarán disponibles para Metas/Aportes, Deudas/Pagos, Dashboard, Análisis y Distribución 50/30/20. Estos módulos **no** están implementados en esta fase.
+
+---
+
 ## Organización general actual
 
 ```text
