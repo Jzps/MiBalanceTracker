@@ -5,7 +5,10 @@
     </a>
 
     <div class="barra-acciones">
-        <a class="btn btn-fantasma btn-pequeno" href="{{ route('login') }}">Cerrar sesión</a>
+        <form id="frm-logout" method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="btn btn-fantasma btn-pequeno">Cerrar sesión</button>
+        </form>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu-principal">
             <span class="nav-toggle-barra"></span>
             <span class="nav-toggle-barra"></span>

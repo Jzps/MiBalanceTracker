@@ -11,7 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'ingreso.configurado' => \App\Http\Middleware\Auth\EnsureIngresoFijoConfigurado::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

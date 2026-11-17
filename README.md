@@ -2,7 +2,7 @@
 
 Aplicación web del **Sistema de Gestión Financiera Personal** organizada con **Laravel 11** sobre XAMPP (Apache y MySQL). Conserva el frontend visual existente y utiliza migraciones de Laravel para preparar la estructura de base de datos aprobada.
 
-> **Nota de esta fase:** se ha adaptado la estructura del proyecto a Laravel y se ha preparado la base técnica (vistas, rutas, assets, configuración y migraciones). **No** se ha implementado autenticación real, sesiones personalizadas, cookies, registro funcional, consultas CRUD ni lógica financiera.
+> **Estado actual:** el proyecto cuenta con autenticación real (registro, login, logout), sesiones administradas por Laravel y protección de rutas, además de la configuración inicial obligatoria del ingreso fijo mensual. **Todavía no** se han implementado operaciones CRUD ni lógica financiera de los módulos. El historial técnico por fases está en `docs/fases.md`.
 
 ## Acceso a la aplicación
 
@@ -198,16 +198,26 @@ Como alternativa puede configurarse `http://sistema-financiero.test` mediante Vi
 3. Iniciar **MySQL**.
 4. Abrir la URL principal: `http://localhost/TrackerFinanzasPersonales/`.
 
-Acceso de demostración (validación en frontend, sin autenticación real):
+La pantalla inicial es el Login. Para usar la aplicación, crea una cuenta desde **Regístrate**; no existen usuarios ni credenciales de demostración.
 
-| Usuario | Contraseña |
-| :------ | :--------- |
-| `admin` | `admin123` |
+## Autenticación y acceso
+
+- **Registro real:** `Regístrate` crea un usuario en la tabla `usuario`. La contraseña se guarda como hash en `password_hash` (nunca en texto plano).
+- **Inicio de sesión:** se valida contra los registros de MySQL mediante `correo` y contraseña. No se utiliza más la comprobación JavaScript de credenciales.
+- **Configuración inicial obligatoria:** después del registro (o al iniciar sesión por primera vez) se solicita el **ingreso fijo mensual**. No se puede acceder a los módulos sin registrarlo.
+- **Módulos protegidos:** Dashboard, Movimientos, Presupuestos, Metas, Deudas, Análisis, Educación financiera, 50/30/20 y Configuración requieren sesión activa e ingreso configurado.
+- **Cierre de sesión:** botón "Cerrar sesión" del menú superior (petición POST con CSRF).
+- **Sesiones:** Laravel las almacena en archivos (`storage/framework/sessions/`); la cookie de sesión es administrada por Laravel (HttpOnly, SameSite Lax, Secure desactivado en HTTP local). No se usan cookies manuales ni `localStorage`.
+- **Modelo de autenticación:** `App\Models\Usuario` (tabla `usuario`, clave `id_usuario`, campo de contraseña `password_hash`).
+
+Para crear usuarios de prueba, usa el formulario de registro de la aplicación. No se documentan credenciales predefinidas.
+
+Las pruebas automatizadas (`php artisan test`) utilizan una base de datos aislada `sistema_gestion_financiera_auth_test`, nunca la base principal. Créala vacía una vez desde MySQL/phpMyAdmin antes de ejecutar las pruebas.
 
 ## Estructura principal del proyecto
 
 ```text
-├── app/                    # Código de aplicación (controladores/modelos en fases posteriores)
+├── app/                    # Controladores (Auth/), middleware (Auth/) y modelos Eloquent
 ├── bootstrap/
 ├── config/
 ├── database/
@@ -244,7 +254,7 @@ Acceso de demostración (validación en frontend, sin autenticación real):
 
 ## Modelos y relaciones de base de datos
 
-La capa de acceso a datos está preparada con ocho modelos Eloquent en `app/Models/`. Todos usan su tabla real, clave primaria personalizada, `incrementing = true`, `keyType = int` y `timestamps = false` (el esquema aprobado no incluye `created_at`/`updated_at`). No se ha implementado autenticación ni lógica CRUD.
+La capa de acceso a datos está preparada con ocho modelos Eloquent en `app/Models/`. Todos usan su tabla real, clave primaria personalizada, `incrementing = true`, `keyType = int` y `timestamps = false` (el esquema aprobado no incluye `created_at`/`updated_at`). `Usuario` es además el modelo autenticable; no se ha implementado lógica CRUD financiera.
 
 | Modelo | Tabla | Clave primaria | Relaciones |
 |---|---|---|---|
@@ -303,4 +313,4 @@ php artisan migrate
 
 ## Documentación
 
-La documentación original del proyecto se mantiene en `docs/` (planteamiento, requisitos, MER). El esquema SQL de referencia se conserva en `db/db.sql`.
+La documentación original del proyecto se mantiene en `docs/` (planteamiento, requisitos, MER). El esquema SQL de referencia se conserva en `db/db.sql`. El historial técnico de las fases y sus archivos está en **`docs/fases.md`**.

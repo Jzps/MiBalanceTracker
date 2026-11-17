@@ -2,20 +2,15 @@
    Finanzas Personales — JavaScript del frontend
 
      1. Menú lateral en pantallas pequeñas (navegación).
-     2. Mostrar u ocultar la contraseña (login y registro).
+     2. Mostrar u ocultar la contraseña (login, registro y configuración).
      3. Los formularios de los módulos son visuales: se evita que envíen
         información a un archivo de acción que todavía no tiene lógica.
-     4. Inicio de sesión de demostración (admin / admin123).
 
    Todos los selectores se comprueban antes de usarse, de modo que una página
    sin un formulario concreto no produce errores en la consola.
    ========================================================================== */
 (function () {
     'use strict';
-
-    /* Credenciales autorizadas para la demostración. */
-    var USUARIO_DEMO = 'admin';
-    var CLAVE_DEMO = 'admin123';
 
     function $(selector, contexto) {
         return (contexto || document).querySelector(selector);
@@ -54,34 +49,11 @@
     /* ---------- 3. Formularios visuales de los módulos ---------- */
     /* Sus botones todavía no ejecutan ninguna operación. Se cancela el envío
        para no recargar la página, mientras que la validación nativa del
-       navegador (required, type, min, max) sigue funcionando. */
-    $$('form:not(#frm-login)').forEach(function (form) {
+       navegador (required, type, min, max) sigue funcionando.
+       Los formularios de autenticación sí se envían al backend Laravel. */
+    $$('form:not(#frm-login):not(#frm-registro):not(#frm-ingreso-inicial):not(#frm-logout)').forEach(function (form) {
         form.addEventListener('submit', function (evento) {
             evento.preventDefault();
         });
     });
-
-    /* ---------- 4. Inicio de sesión de demostración ---------- */
-    var formLogin = $('#frm-login');
-
-    if (formLogin) {
-        formLogin.addEventListener('submit', function (evento) {
-            evento.preventDefault();
-
-            var usuario = $('#usuario');
-            var clave = $('#password');
-            var mensaje = $('#mensaje');
-
-            if (usuario.value.trim() === USUARIO_DEMO && clave.value === CLAVE_DEMO) {
-                var destinoDashboard = window.APP_BASE_PATH
-                    ? window.APP_BASE_PATH.replace(/\/$/, '') + '/dashboard'
-                    : (document.querySelector('meta[name="app-base-url"]') ? document.querySelector('meta[name="app-base-url"]').getAttribute('content').replace(/\/$/, '') + '/dashboard' : '/dashboard');
-                window.location.href = destinoDashboard;
-            } else {
-                mensaje.textContent = 'Usuario o contraseña incorrectos. Usa admin / admin123.';
-                mensaje.hidden = false;
-                clave.focus();
-            }
-        });
-    }
 })();
