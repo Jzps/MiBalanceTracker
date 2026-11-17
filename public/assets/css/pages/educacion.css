@@ -1,0 +1,9 @@
+/* Educación financiera — estilos particulares del módulo */
+
+.contenido p, .contenido li { font-size: 14px; }
+.contenido ul { padding-left: 18px; margin: 0 0 10px; }
+.contenido li { margin-bottom: 5px; }
+.contenido dl { margin: 0 0 10px; }
+.contenido dt { font-weight: bold; margin-top: 8px; }
+.contenido dd { margin: 3px 0 0 14px; color: var(--c-texto-suave); }
+.contenido-relacionado { font-size: 13px; margin-bottom: 0; }
