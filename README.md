@@ -242,6 +242,36 @@ Acceso de demostración (validación en frontend, sin autenticación real):
 - **`public/assets/css/pages/*.css`:** hojas particulares por módulo (`analisis.css`, `configuracion.css`, `dashboard.css`, `deudas.css`, `distribucion.css`, `educacion.css`, `metas.css`, `movimientos.css`, `presupuestos.css`).
 - El layout (`resources/views/layouts/app.blade.php`) carga `styles.css` y expone `@stack('styles')`; cada vista de módulo añade su hoja específica con `@push('styles')`, por lo que cada página recibe la hoja general y su CSS particular. Login y Registro utilizan únicamente la hoja general. Los recursos se sirven desde `public/assets/` (sin Vite).
 
+## Modelos y relaciones de base de datos
+
+La capa de acceso a datos está preparada con ocho modelos Eloquent en `app/Models/`. Todos usan su tabla real, clave primaria personalizada, `incrementing = true`, `keyType = int` y `timestamps = false` (el esquema aprobado no incluye `created_at`/`updated_at`). No se ha implementado autenticación ni lógica CRUD.
+
+| Modelo | Tabla | Clave primaria | Relaciones |
+|---|---|---|---|
+| `App\Models\Usuario` | `usuario` | `id_usuario` | `categorias()`, `movimientos()`, `presupuestos()`, `metasAhorro()`, `deudas()` (HasMany por `id_usuario`) |
+| `App\Models\Categoria` | `categoria` | `id_categoria` | `usuario()` (BelongsTo), `movimientos()` y `presupuestos()` (HasMany por `id_categoria`) |
+| `App\Models\Movimiento` | `movimiento` | `id_movimiento` | `usuario()` (BelongsTo), `categoria()` (BelongsTo), `pagoDeuda()` (HasOne por `id_movimiento`, UNIQUE) |
+| `App\Models\Presupuesto` | `presupuesto` | `id_presupuesto` | `usuario()` y `categoria()` (BelongsTo) |
+| `App\Models\MetaAhorro` | `meta_ahorro` | `id_meta` | `usuario()` (BelongsTo), `aportes()` (HasMany por `id_meta`) |
+| `App\Models\AporteAhorro` | `aporte_ahorro` | `id_aporte` | `metaAhorro()` (BelongsTo) |
+| `App\Models\Deuda` | `deuda` | `id_deuda` | `usuario()` (BelongsTo), `pagos()` (HasMany por `id_deuda`) |
+| `App\Models\PagoDeuda` | `pago_deuda` | `id_pago` | `deuda()` y `movimiento()` (BelongsTo) |
+
+- **Migraciones:** `database/migrations/` (8 archivos, uno por tabla, en orden de dependencias).
+- **SQL de referencia original:** `db/db.sql` (no modificado).
+- **Casts:** importes y porcentajes `decimal:2`, fechas como `date`, booleanos `es_predeterminada`/`activa` como `boolean`; los ENUM se conservan como texto.
+
+Comprobar la conexión MySQL y el estado de las migraciones:
+
+```bash
+php artisan tinker --execute="echo json_encode(DB::select('SELECT 1 AS conexion'));"
+php artisan migrate:status
+```
+
+La primera consulta debe devolver `[{"conexion":1}]` y `migrate:status` debe mostrar las ocho migraciones como ejecutadas (`Ran`) en la base configurada. Las comprobaciones de inserción/relaciones se realizan solo en una base temporal independiente; la base principal no contiene datos de prueba.
+
+> El modelo predeterminado `app/Models/User.php` de Laravel permanece sin uso por esta aplicación (el proyecto usa `usuario`/`Usuario`). Se conserva por compatibilidad con la configuración estándar de Laravel hasta que se defina la estrategia de autenticación en una fase posterior.
+
 ## Solución de errores comunes
 
 - **Error 403 Forbidden:** revisa `C:\xampp\apache\logs\error.log` y `access.log` para la URL solicitada. Verifica que el Alias apunte a `.../public`, que el bloque `<Directory>` tenga `Require all granted`, `AllowOverride All` y la ruta física correcta, que `mod_alias`/`mod_rewrite` estén activos y que no haya reglas o Alias duplicados. Comprueba que la URL solicitada sea la correcta (p. ej. `http://localhost/TrackerFinanzasPersonales/`); solicitudes con caracteres no válidos en la ruta pueden generar 403 en Apache.
