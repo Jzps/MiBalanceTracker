@@ -1,0 +1,12 @@
+/* Dashboard — estilos particulares del módulo */
+
+.formulario-inline {
+    grid-template-columns: minmax(220px, 320px) auto;
+    align-items: end;
+    gap: 12px;
+}
+.formulario-inline .btn { justify-self: start; }
+
+@media (max-width: 760px) {
+    .formulario-inline { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,12 @@
+/* Movimientos — estilos particulares del módulo */
+
+.filtros {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 760px) {
+    .filtros { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,22 @@
+/* Análisis — estilos particulares del módulo */
+
+.grafico-barras {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+}
+.grafico-barras li {
+    display: grid;
+    grid-template-columns: 150px 1fr 110px;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+.grafico-barras-valor { text-align: right; color: var(--c-texto-suave); }
+
+@media (max-width: 760px) {
+    .grafico-barras li { grid-template-columns: 110px 1fr; }
+    .grafico-barras-valor { grid-column: 2; text-align: left; }
+}
