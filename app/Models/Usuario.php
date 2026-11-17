@@ -2,13 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Usuario extends Model
+class Usuario extends Authenticatable
 {
     protected $table = 'usuario';
 
     protected $primaryKey = 'id_usuario';
+
+    /**
+     * Nombre de la columna que almacena el hash de la contraseña.
+     */
+    protected $authPasswordName = 'password_hash';
+
+    /**
+     * Evita que el hash se exponga al serializar el modelo.
+     */
+    protected $hidden = ['password_hash'];
 
     public $incrementing = true;
 

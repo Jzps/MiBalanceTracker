@@ -8,16 +8,22 @@
         <p>Acceso al sistema de finanzas personales.</p>
     </div>
 
-    <p class="auth-credenciales">
-        Usuario <code>admin</code> · Contraseña <code>admin123</code>
-    </p>
+    @if ($errors->any())
+        <div id="mensaje" class="alerta alerta-error" role="alert">
+            @foreach ($errors->all() as $error)
+                {{ $error }}@if (!$loop->last)<br>@endif
+            @endforeach
+        </div>
+    @else
+        <div id="mensaje" class="alerta alerta-error" role="alert" hidden></div>
+    @endif
 
-    <div id="mensaje" class="alerta alerta-error" role="alert" hidden></div>
-
-    <form id="frm-login" class="formulario" action="{{ route('login') }}" method="post">
+    <form id="frm-login" class="formulario" action="{{ route('login.post') }}" method="post">
+        @csrf
         <div class="campo">
-            <label for="usuario">Usuario</label>
-            <input type="text" id="usuario" name="usuario" required autocomplete="username" placeholder=" ">
+            <label for="usuario">Correo electrónico</label>
+            <input type="email" id="usuario" name="correo" value="{{ old('correo') }}" required
+                   autocomplete="username" placeholder=" ">
         </div>
 
         <div class="campo">
