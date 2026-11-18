@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\DeudaController;
+use App\Http\Controllers\MetaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\PresupuestoController;
@@ -72,19 +74,19 @@ Route::middleware(['auth', EnsureIngresoFijoConfigurado::class])->group(function
     Route::put('/presupuestos/{presupuesto}', [PresupuestoController::class, 'update'])->name('presupuestos.update');
     Route::delete('/presupuestos/{presupuesto}', [PresupuestoController::class, 'destroy'])->name('presupuestos.destroy');
 
-    Route::get('/metas', function () {
-        return view('pages.metas.index', [
-            'tituloPagina' => 'Metas',
-            'paginaActiva' => 'metas',
-        ]);
-    })->name('metas');
+    // Metas, fondo de emergencia y aportes de ahorro.
+    Route::get('/metas', [MetaController::class, 'index'])->name('metas');
+    Route::post('/metas', [MetaController::class, 'store'])->name('metas.store');
+    Route::put('/metas/{meta}', [MetaController::class, 'update'])->name('metas.update');
+    Route::delete('/metas/{meta}', [MetaController::class, 'destroy'])->name('metas.destroy');
+    Route::post('/metas/{meta}/aportes', [MetaController::class, 'storeAporte'])->name('aportes.store');
 
-    Route::get('/deudas', function () {
-        return view('pages.deudas.index', [
-            'tituloPagina' => 'Deudas',
-            'paginaActiva' => 'deudas',
-        ]);
-    })->name('deudas');
+    // Deudas y pagos.
+    Route::get('/deudas', [DeudaController::class, 'index'])->name('deudas');
+    Route::post('/deudas', [DeudaController::class, 'store'])->name('deudas.store');
+    Route::put('/deudas/{deuda}', [DeudaController::class, 'update'])->name('deudas.update');
+    Route::delete('/deudas/{deuda}', [DeudaController::class, 'destroy'])->name('deudas.destroy');
+    Route::post('/deudas/{deuda}/pagos', [DeudaController::class, 'storePago'])->name('pagos.store');
 
     Route::get('/analisis', function () {
         return view('pages.analisis.index', [

@@ -267,6 +267,87 @@ Los movimientos y categorías ya registrados estarán disponibles para Metas/Apo
 
 ---
 
+## Fase 5 — Metas, Aportes, Deudas y Pagos
+
+### A. Responsabilidad
+
+Hace funcionales los módulos de ahorro y deuda: crear/editar/eliminar metas y fondo de emergencia, registrar y consultar aportes con cálculo de progreso, administrar deudas con saldo calculado, y registrar pagos generando de forma atómica un movimiento de gasto vinculado. No incluye Dashboard, Análisis ni Distribución funcionales.
+
+### B. Estructura de archivos
+
+**Creados:** `app/Http/Controllers/MetaController.php`, `app/Http/Controllers/DeudaController.php`, `resources/views/pages/metas/_progreso.blade.php`, `tests/Feature/Metas/MetaTest.php`, `tests/Feature/Metas/AporteTest.php`, `tests/Feature/Deudas/DeudaTest.php`, `tests/Feature/Deudas/PagoDeudaTest.php`, `tests/Feature/Deudas/IntegracionPagoMovimientoTest.php`.
+
+**Modificados:** `routes/web.php`, `resources/views/pages/metas/index.blade.php`, `resources/views/pages/deudas/index.blade.php`, `app/Http/Controllers/MovimientoController.php`, `public/assets/js/app.js`, `docs/fases.md`, `README.md`.
+
+### C. MetaController
+
+- `index()`: metas propias con aportes cargados; calcula acumulado, pendiente, porcentaje real y ancho de barra limitado a 100%; prepara edición.
+- `store()`: valida nombre, tipo_meta, monto_objetivo y fecha; fuerza `estado = activa` e `id_usuario = Auth::id()`.
+- `update()`: valida y actualiza solo metas propias; impide marcar `completada` manualmente y sincroniza el estado cuando el acumulado alcanza o deja de alcanzar el objetivo; permite pausar/cancelar.
+- `destroy()`: solo permite baja física si no hay aportes; si los hay, bloquea y sugiere cancelar.
+- `storeAporte()`: verifica meta propia y activa, valida monto/fecha/nota y registra el aporte mediante `$meta->aportes()` dentro de `DB::transaction`, actualizando el estado a `completada` cuando corresponde.
+
+### D. DeudaController
+
+- `index()`: deudas propias con pagos; calcula pagado, saldo y porcentaje; prepara edición y categorías de gasto activas para el formulario de pago.
+- `store()`: valida acreedor, monto_inicial, fecha_vencimiento y pago_minimo; fuerza `pendiente` e `id_usuario` del servidor.
+- `update()`: valida, impide un monto inicial menor a lo pagado, controla estados (`pagada` solo con saldo cero; `pendiente` con saldo cero se corrige a `pagada`; cancelación y reactivación permitidas).
+- `destroy()`: baja física solo sin pagos; si los hay, bloquea y sugiere cancelar.
+- `storePago()`: verifica deuda propia, estado y saldo; valida monto, fecha, categoría de gasto propia/activa y descripción; ejecuta la transacción descrita en H.
+
+### E. Modelos reutilizados
+
+`MetaAhorro`, `AporteAhorro`, `Deuda` y `PagoDeuda` se usan sin cambios, junto con `Movimiento` y `Categoria` para los pagos. No se crearon modelos ni migraciones.
+
+### F. Relaciones
+
+Usuario → metas (`id_usuario`), MetaAhorro → aportes (`id_meta`), Usuario → deudas (`id_usuario`), Deuda → pagos (`id_deuda`), PagoDeuda → Movimiento (`id_movimiento`, UNIQUE). La propiedad de aportes y pagos se comprueba siempre a través de la meta/deuda propietaria.
+
+### G. Funcionamiento de los aportes
+
+Se registran solo en `aporte_ahorro`. No crean movimientos ni afectan presupuestos (RN-06). Acumulado = `SUM(aportes.monto)`; pendiente = `MAX(objetivo - acumulado, 0)`; progreso = `acumulado / objetivo * 100`. El porcentaje real se muestra aunque supere 100%, pero la barra visual se limita a 100%.
+
+### H. Funcionamiento de los pagos
+
+Dentro de `DB::transaction` se crea: (1) un `Movimiento` de gasto con categoría válida, monto, fecha y descripción (derivada del acreedor si falta), y (2) un `PagoDeuda` con el `id_movimiento` recién creado. Se recalcula el saldo y, si llega a cero, la deuda pasa a `pagada`. Si falla cualquier inserción, se revierten ambas. El movimiento aparece en Movimientos y afecta presupuestos por el mecanismo de la Fase 4.
+
+### I. Fórmulas
+
+- Ahorro acumulado: suma de aportes de la meta.
+- Ahorro pendiente: `MAX(objetivo - acumulado, 0)`.
+- Porcentaje de progreso: `(acumulado / objetivo) * 100`.
+- Saldo pendiente de deuda: `monto_inicial - SUM(pagos.monto)` (mínimo 0).
+- Porcentaje pagado: `(pagado / monto_inicial) * 100`.
+
+### J. Integridad y seguridad
+
+Todas las consultas filtran por `Auth::id()`; los registros ajenos devuelven 404. No se aceptan propietarios desde formularios. Se conserva el historial: las metas con aportes y las deudas con pagos no se eliminan físicamente, se cancelan. No hay cascadas. `MovimientoController::update()` ahora bloquea la edición de movimientos vinculados a `pago_deuda` (antes solo bloqueaba la eliminación), con mensaje comprensible.
+
+### K. Rutas
+
+| Método | URL | Nombre | Operación |
+|---|---|---|---|
+| GET | `/metas` | `metas` | Listado con progreso |
+| POST | `/metas` | `metas.store` | Crear meta/fondo |
+| PUT | `/metas/{meta}` | `metas.update` | Editar/cancelar |
+| DELETE | `/metas/{meta}` | `metas.destroy` | Eliminar sin aportes |
+| POST | `/metas/{meta}/aportes` | `aportes.store` | Registrar aporte |
+| GET | `/deudas` | `deudas` | Listado con pagos |
+| POST | `/deudas` | `deudas.store` | Crear deuda |
+| PUT | `/deudas/{deuda}` | `deudas.update` | Editar/cancelar/reactivar |
+| DELETE | `/deudas/{deuda}` | `deudas.destroy` | Eliminar sin pagos |
+| POST | `/deudas/{deuda}/pagos` | `pagos.store` | Registrar pago |
+
+### L. Pruebas
+
+`php artisan test`: **92 pruebas, 458 aserciones, todas pasan** (57 previas + 35 nuevas) sobre `sistema_gestion_financiera_auth_test`. Cubren metas y fondos, aportes, cálculos, estados automáticos, baja lógica, rollback de transacciones, pagos parciales/totales, validaciones, historia, aislamiento entre usuarios, integración con Movimientos/Presupuestos y protección de movimientos vinculados a pagos.
+
+### M. Relación con fases siguientes
+
+Las metas/aportes y deudas/pagos quedan disponibles para que Dashboard, Análisis y Distribución 50/30/20 consuman sus datos en fases posteriores. Esos módulos **no** están implementados aquí.
+
+---
+
 ## Organización general actual
 
 ```text

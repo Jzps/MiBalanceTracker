@@ -83,4 +83,26 @@
         tipoMovimiento.addEventListener('change', filtrarCategorias);
         filtrarCategorias();
     }
+
+    /* ---------- 5. Acción dinámica de aportes y pagos ---------- */
+    var formulariosDinamicos = [
+        { form: '#frm-aporte', selector: '#id_meta' },
+        { form: '#frm-pago', selector: '#id_deuda' }
+    ];
+
+    formulariosDinamicos.forEach(function (config) {
+        var formulario = $(config.form);
+        var selector = $(config.selector);
+        if (!formulario || !selector) {
+            return;
+        }
+        var base = formulario.getAttribute('data-base') || '';
+        var actualizarAccion = function () {
+            if (selector.value && base.indexOf('__') !== -1) {
+                formulario.action = base.replace('__META__', selector.value).replace('__DEUDA__', selector.value);
+            }
+        };
+        selector.addEventListener('change', actualizarAccion);
+        actualizarAccion();
+    });
 })();

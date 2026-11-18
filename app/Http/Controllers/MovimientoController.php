@@ -96,6 +96,11 @@ class MovimientoController extends Controller
             ->where('id_usuario', Auth::id())
             ->findOrFail($id);
 
+        if ($movimiento->pagoDeuda()->exists()) {
+            return redirect()->route('movimientos')->with('error',
+                'El movimiento está asociado a un pago de deuda y no puede modificarse desde este módulo.');
+        }
+
         $datos = $this->validar($request);
         $this->validarCategoria(Auth::id(), $datos['id_categoria'], $datos['tipo']);
 
