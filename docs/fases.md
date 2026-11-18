@@ -8,6 +8,8 @@ No sustituye a `docs/Requisitos.md`, `docs/MER.md` ni `docs/Planteamiento.md`: e
 
 Este archivo debe actualizarse al finalizar cada fase posterior.
 
+> **Nota de actualización de URL:** las referencias a `TrackerFinanzasPersonales` en las secciones históricas siguientes describen la configuración original de la Fase 1 y se conservan como registro. La URL estándar actual es `http://localhost/MiBalanceTracker/` (con `APP_URL=http://localhost/MiBalanceTracker`, `SESSION_PATH=/MiBalanceTracker`, `RewriteBase /MiBalanceTracker/` y el Alias de Apache apuntando a la carpeta física real de `public/`). Consulta `README.md` para la instalación vigente.
+
 ---
 
 ## Fase 1 — Preparar Laravel y XAMPP

@@ -8,12 +8,13 @@ Aplicación web del **Sistema de Gestión Financiera Personal** organizada con *
 
 ```text
 URL principal:
-http://localhost/TrackerFinanzasPersonales/
+http://localhost/MiBalanceTracker/
 ```
 
-- **Ubicación del proyecto:** preferiblemente en `C:\xampp\htdocs\TrackerFinanzasPersonales` (ajusta la ruta si tu copia local está en otra ubicación).
+- **Ubicación esperada del proyecto:** `C:\xampp\htdocs\MiBalanceTracker`.
+- **Nombre de la carpeta local:** el nombre del repositorio en GitHub (`mibalancetracker`) **no** obliga a usar ese mismo nombre en disco. Clona con el nombre de destino `MiBalanceTracker` (ver [Obtener el proyecto](#obtener-el-proyecto)). Si tu copia está en otra carpeta, **no la renombres**: adapta solo la ruta física del Alias de Apache; la URL pública seguirá siendo `http://localhost/MiBalanceTracker/`.
 - **Servicios requeridos:** inicia **Apache** y **MySQL** desde el panel de control de XAMPP.
-- **Configuración de Apache:** Apache debe exponer únicamente el directorio `public/` del proyecto mediante un **Alias** hacia `/TrackerFinanzasPersonales` (ver sección [Configurar Apache (XAMPP)](#configurar-apache-xampp)).
+- **Configuración de Apache:** Apache debe exponer únicamente el directorio `public/` del proyecto mediante un **Alias** hacia `/MiBalanceTracker` (ver sección [Configurar Apache (XAMPP)](#configurar-apache-xampp)).
 - **Pantalla inicial:** al abrir la URL principal debe mostrarse la pantalla de **Login**.
 - **Dirección alternativa (opcional):** si se configura un Virtual Host, puede usarse `http://sistema-financiero.test` como alternativa; esta no sustituye la URL principal documentada arriba.
 
@@ -55,14 +56,20 @@ C:\xampp\php\php.exe -v
 
 ## Obtener el proyecto
 
-1. Clona el repositorio o copia la carpeta del proyecto.
-2. Ubícalo dentro de la carpeta de XAMPP, por ejemplo:
+1. Coloca la copia local dentro de `htdocs` de XAMPP. La ubicación esperada es:
 
 ```text
-C:\xampp\htdocs\TrackerFinanzasPersonales
+C:\xampp\htdocs\MiBalanceTracker
 ```
 
-Ajusta el nombre de la carpeta si tu copia local usa otro nombre.
+2. Si obtienes el proyecto desde GitHub, clónalo indicando `MiBalanceTracker` como nombre de destino (sustituye el marcador por la URL real del repositorio):
+
+```bash
+cd C:\xampp\htdocs
+git clone <URL_DEL_REPOSITORIO> MiBalanceTracker
+```
+
+El nombre del repositorio remoto no determina el nombre de la carpeta local: `git clone ... MiBalanceTracker` crea esa carpeta sin importar cómo se llame el repositorio en GitHub. Si ya tienes la carpeta con otro nombre, **no la renombres**: la URL pública se configura con el Alias de Apache y es independiente del nombre físico (ver [Configurar Apache (XAMPP)](#configurar-apache-xampp)).
 
 ## Instalar dependencias PHP
 
@@ -91,8 +98,16 @@ Cada integrante debe configurar sus propios datos locales de conexión MySQL en 
 Para la URL principal documentada, `.env.example` utiliza:
 
 ```env
-APP_URL=http://localhost/TrackerFinanzasPersonales
+APP_URL=http://localhost/MiBalanceTracker
 ```
+
+Como la aplicación se sirve bajo el subdirectorio `/MiBalanceTracker`, la plantilla también deja preparada la ruta de la cookie de sesión:
+
+```env
+SESSION_PATH=/MiBalanceTracker
+```
+
+`config/session.php` lee esa variable mediante `SESSION_PATH`; no es necesario editar el archivo de configuración de sesiones. Conserva tus credenciales MySQL y tu `APP_KEY` locales: `.env` está excluido de Git y `.env.example` sigue siendo solo la plantilla para instalaciones nuevas.
 
 ## Configurar MySQL
 
@@ -145,7 +160,7 @@ No uses comandos destructivos como `migrate:fresh`, `migrate:refresh` o `db:wipe
 
 ## Configurar Apache (XAMPP)
 
-La aplicación debe ejecutarse mediante **Apache de XAMPP** apuntando al directorio `public/` del proyecto. **No** se utiliza `php artisan serve` como método principal.
+La aplicación debe ejecutarse mediante **Apache de XAMPP** apuntando al directorio `public/` del proyecto. La URL de acceso es `http://localhost/MiBalanceTracker/`. **No** abrir la aplicación entrando directamente en la carpeta `public/` (por ejemplo `http://localhost/MiBalanceTracker/public/`) ni mediante `php artisan serve`: son métodos alternativos que no corresponden a la URL estándar documentada.
 
 ### 1. Requisitos de Apache
 
@@ -155,14 +170,14 @@ La aplicación debe ejecutarse mediante **Apache de XAMPP** apuntando al directo
 
 ### 2. Alias para la URL principal (recomendado)
 
-Para conservar la dirección original `http://localhost/TrackerFinanzasPersonales/`, configura un **Alias** que apunte al directorio `public/` del proyecto (sin exponer la raíz del repositorio).
+Para exponer la dirección estándar `http://localhost/MiBalanceTracker/`, configura un **Alias** que apunte al directorio `public/` del proyecto (sin exponer la raíz del repositorio). La ruta física del Alias es independiente del nombre con el que se clavó el repositorio.
 
-Configuración de referencia (ajusta la ruta real):
+Configuración de referencia para la ubicación esperada `C:\xampp\htdocs\MiBalanceTracker` (ajusta la ruta real si instalas el proyecto en otro lugar):
 
 ```apache
-Alias /TrackerFinanzasPersonales "C:/xampp/htdocs/TrackerFinanzasPersonales/public"
+Alias /MiBalanceTracker "C:/xampp/htdocs/MiBalanceTracker/public"
 
-<Directory "C:/xampp/htdocs/TrackerFinanzasPersonales/public">
+<Directory "C:/xampp/htdocs/MiBalanceTracker/public">
     Options -Indexes +FollowSymLinks
     AllowOverride All
     Require all granted
@@ -170,22 +185,20 @@ Alias /TrackerFinanzasPersonales "C:/xampp/htdocs/TrackerFinanzasPersonales/publ
 </Directory>
 ```
 
-> **Nota:** `public/.htaccess` incluye `RewriteBase /TrackerFinanzasPersonales/` para el funcionamiento correcto de las rutas bajo ese subdirectorio. Si instalas el proyecto con otro nombre/ruta base, ajusta `RewriteBase` en `public/.htaccess` y el `Alias` en consecuencia.
+> **Nota:** `public/.htaccess` incluye `RewriteBase /MiBalanceTracker/` para el funcionamiento correcto de las rutas bajo ese subdirectorio; debe coincidir con el Alias. Si instalas el proyecto en otra carpeta física, **no cambies** la URL pública ni el `RewriteBase`: adapta únicamente la ruta dentro de `Alias` y `<Directory>` a la ubicación real de `.../public`.
 
 **Dónde aplicarlo (XAMPP en Windows):**
 1. Identifica el archivo de configuración cargado por Apache. En XAMPP suele ser `C:\xampp\apache\conf\extra\httpd-xampp.conf` (incluido desde `httpd.conf`). Antes de modificar, **haz una copia de seguridad** del archivo.
-2. Comprueba si ya existe un `Alias /TrackerFinanzasPersonales` equivalente para evitar duplicados o conflictos.
+2. Comprueba si ya existe un `Alias /MiBalanceTracker` equivalente para evitar duplicados o conflictos.
 3. Agrega o actualiza el bloque anterior apuntando a la ruta real de `.../public` (el Alias debe estar fuera de bloques incompatibles y el `<Directory>` debe referenciar la ruta física real).
 4. Valida la sintaxis de Apache con:
    ```powershell
    C:\xampp\apache\bin\httpd.exe -t
    ```
 5. Reinicia **Apache** desde el Panel de Control de XAMPP (botón **Stop** y luego **Start** en el módulo Apache) para que cargue la configuración. Comprueba que Apache quede en ejecución y sin errores en `C:\xampp\apache\logs\error.log`.
-6. Abre en el navegador: `http://localhost/TrackerFinanzasPersonales/` (debe mostrarse el Login).
+6. Abre en el navegador: `http://localhost/MiBalanceTracker/` (debe mostrarse el Login).
 
-Si no puedes modificar la configuración global de Apache en tu equipo, solicita a quien administre XAMPP que incorpore el Alias anterior en el archivo de configuración correspondiente y reinicie Apache.
-
-Si no puedes modificar la configuración global de Apache en tu equipo, solicita a quien administre XAMPP que incorpore el Alias anterior en el archivo de configuración correspondiente y reinicie Apache.
+Si no puedes modificar la configuración global de Apache en tu equipo, solicita a quien administre XAMPP que incorpore el Alias anterior con la ruta física real y reinicie Apache. Esta configuración es **local** y no debe versionarse en el repositorio.
 
 ### 3. Virtual Host alternativo (opcional)
 
@@ -196,7 +209,9 @@ Como alternativa puede configurarse `http://sistema-financiero.test` mediante Vi
 1. Abrir XAMPP.
 2. Iniciar **Apache**.
 3. Iniciar **MySQL**.
-4. Abrir la URL principal: `http://localhost/TrackerFinanzasPersonales/`.
+4. Abrir la aplicación **únicamente** en `http://localhost/MiBalanceTracker/`.
+
+No se debe acceder mediante `http://localhost/MiBalanceTracker/public/` ni ejecutando `php artisan serve`; la entrada estándar es la URL indicada, servida por el Alias de Apache hacia `public/`.
 
 La pantalla inicial es el Login. Para usar la aplicación, crea una cuenta desde **Regístrate**; no existen usuarios ni credenciales de demostración.
 
@@ -284,8 +299,8 @@ La primera consulta debe devolver `[{"conexion":1}]` y `migrate:status` debe mos
 
 ## Solución de errores comunes
 
-- **Error 403 Forbidden:** revisa `C:\xampp\apache\logs\error.log` y `access.log` para la URL solicitada. Verifica que el Alias apunte a `.../public`, que el bloque `<Directory>` tenga `Require all granted`, `AllowOverride All` y la ruta física correcta, que `mod_alias`/`mod_rewrite` estén activos y que no haya reglas o Alias duplicados. Comprueba que la URL solicitada sea la correcta (p. ej. `http://localhost/TrackerFinanzasPersonales/`); solicitudes con caracteres no válidos en la ruta pueden generar 403 en Apache.
-- **Error 404 en rutas de Laravel:** verifica que el Alias/Virtual Host apunte a `public/`, que `mod_rewrite` esté activo, que `AllowOverride All` esté configurado y que exista `public/.htaccess`. En subdirectorios, `public/.htaccess` debe incluir el `RewriteBase` adecuado (por defecto `/TrackerFinanzasPersonales/`).
+- **Error 403 Forbidden:** revisa `C:\xampp\apache\logs\error.log` y `access.log` para la URL solicitada. Verifica que el Alias apunte a `.../public`, que el bloque `<Directory>` tenga `Require all granted`, `AllowOverride All` y la ruta física correcta, que `mod_alias`/`mod_rewrite` estén activos y que no haya reglas o Alias duplicados. Comprueba que la URL solicitada sea la correcta (p. ej. `http://localhost/MiBalanceTracker/`); solicitudes con caracteres no válidos en la ruta pueden generar 403 en Apache.
+- **Error 404 en rutas de Laravel:** verifica que el Alias/Virtual Host apunte a `public/`, que `mod_rewrite` esté activo, que `AllowOverride All` esté configurado y que exista `public/.htaccess`. En subdirectorios, `public/.htaccess` debe incluir el `RewriteBase` adecuado (por defecto `/MiBalanceTracker/`).
 - **Error 500:** revisa `storage/logs/laravel.log` y `C:\xampp\apache\logs\error.log`, permisos de escritura en `storage/` y `bootstrap/cache/`, y que `APP_KEY` esté generado (`php artisan key:generate`). Si el log de Apache indica "limit of 10 internal redirects", revisa `RewriteBase` y reglas de `.htaccess`.
 - **Apache no inicia:** ejecuta `C:\xampp\apache\bin\httpd.exe -t` para ver errores de sintaxis, revisa `error.log`, conflictos de puerto 80 y cambios recientes en la configuración (restaura la copia de seguridad si es necesario).
 - **MySQL no conecta:** confirma que MySQL esté iniciado, que la base `sistema_gestion_financiera` exista y que `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD` en `.env` sean correctos.

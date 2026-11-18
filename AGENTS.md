@@ -3,13 +3,13 @@
 ## What this repo is
 
 - Static visual prototype of a personal-finance tracker (school project, V1): plain PHP used **only** to route pages and include shared components (`header.php`, `navbar.php`, `footer.php`), plus HTML/CSS/JS. **No database, no backend logic, no cookies, no sessions.**
-- Entry point: `index.php`. The project root (`http://localhost/TrackerFinanzasPersonales/`) redirects to `login.php`; the access check (`admin` / `admin123`) is done in JavaScript and, when it succeeds, it goes to `index.php?page=dashboard`. Everything else is behind `index.php?page=<slug>` (whitelist in `modulos()` in `includes/funciones.php`).
+- Entry point: `index.php`. The project root (`http://localhost/MiBalanceTracker/`) redirects to `login.php`; the access check (`admin` / `admin123`) is done in JavaScript and, when it succeeds, it goes to `index.php?page=dashboard`. Everything else is behind `index.php?page=<slug>` (whitelist in `modulos()` in `includes/funciones.php`).
 - `database/db.sql` is a conceptual reference for the future MER only — nothing reads it yet.
 - `actions/` files are reserved for the future logic of each module; the forms point to them by contract but, in V1, their buttons do not process anything.
 
 ## Running locally
 
-- XAMPP: place project in `htdocs/`, start Apache, open `http://localhost/TrackerFinanzasPersonales/` (the login appears automatically).
+- XAMPP: place project in `htdocs/`, start Apache, open `http://localhost/MiBalanceTracker/` (the login appears automatically).
 - No build step, no package manager, no env vars.
 
 ## Architecture
