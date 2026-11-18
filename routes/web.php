@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\DeudaController;
+use App\Http\Controllers\MetaController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\MovimientoController;
+use App\Http\Controllers\PresupuestoController;
 use App\Http\Middleware\Auth\EnsureIngresoFijoConfigurado;
 use Illuminate\Support\Facades\Route;
 
@@ -53,33 +58,35 @@ Route::middleware(['auth', EnsureIngresoFijoConfigurado::class])->group(function
         ]);
     })->name('dashboard');
 
-    Route::get('/movimientos', function () {
-        return view('pages.movimientos.index', [
-            'tituloPagina' => 'Movimientos',
-            'paginaActiva' => 'movimientos',
-        ]);
-    })->name('movimientos');
+    // Movimientos y categorías (la administración de categorías vive en la vista de movimientos).
+    Route::get('/movimientos', [MovimientoController::class, 'index'])->name('movimientos');
+    Route::post('/movimientos', [MovimientoController::class, 'store'])->name('movimientos.store');
+    Route::put('/movimientos/{movimiento}', [MovimientoController::class, 'update'])->name('movimientos.update');
+    Route::delete('/movimientos/{movimiento}', [MovimientoController::class, 'destroy'])->name('movimientos.destroy');
 
-    Route::get('/presupuestos', function () {
-        return view('pages.presupuestos.index', [
-            'tituloPagina' => 'Presupuestos',
-            'paginaActiva' => 'presupuestos',
-        ]);
-    })->name('presupuestos');
+    Route::post('/categorias', [CategoriaController::class, 'store'])->name('categorias.store');
+    Route::put('/categorias/{categoria}', [CategoriaController::class, 'update'])->name('categorias.update');
+    Route::delete('/categorias/{categoria}', [CategoriaController::class, 'destroy'])->name('categorias.destroy');
 
-    Route::get('/metas', function () {
-        return view('pages.metas.index', [
-            'tituloPagina' => 'Metas',
-            'paginaActiva' => 'metas',
-        ]);
-    })->name('metas');
+    // Presupuestos.
+    Route::get('/presupuestos', [PresupuestoController::class, 'index'])->name('presupuestos');
+    Route::post('/presupuestos', [PresupuestoController::class, 'store'])->name('presupuestos.store');
+    Route::put('/presupuestos/{presupuesto}', [PresupuestoController::class, 'update'])->name('presupuestos.update');
+    Route::delete('/presupuestos/{presupuesto}', [PresupuestoController::class, 'destroy'])->name('presupuestos.destroy');
 
-    Route::get('/deudas', function () {
-        return view('pages.deudas.index', [
-            'tituloPagina' => 'Deudas',
-            'paginaActiva' => 'deudas',
-        ]);
-    })->name('deudas');
+    // Metas, fondo de emergencia y aportes de ahorro.
+    Route::get('/metas', [MetaController::class, 'index'])->name('metas');
+    Route::post('/metas', [MetaController::class, 'store'])->name('metas.store');
+    Route::put('/metas/{meta}', [MetaController::class, 'update'])->name('metas.update');
+    Route::delete('/metas/{meta}', [MetaController::class, 'destroy'])->name('metas.destroy');
+    Route::post('/metas/{meta}/aportes', [MetaController::class, 'storeAporte'])->name('aportes.store');
+
+    // Deudas y pagos.
+    Route::get('/deudas', [DeudaController::class, 'index'])->name('deudas');
+    Route::post('/deudas', [DeudaController::class, 'store'])->name('deudas.store');
+    Route::put('/deudas/{deuda}', [DeudaController::class, 'update'])->name('deudas.update');
+    Route::delete('/deudas/{deuda}', [DeudaController::class, 'destroy'])->name('deudas.destroy');
+    Route::post('/deudas/{deuda}/pagos', [DeudaController::class, 'storePago'])->name('pagos.store');
 
     Route::get('/analisis', function () {
         return view('pages.analisis.index', [

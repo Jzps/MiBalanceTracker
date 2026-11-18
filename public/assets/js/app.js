@@ -46,14 +46,63 @@
         });
     });
 
-    /* ---------- 3. Formularios visuales de los módulos ---------- */
-    /* Sus botones todavía no ejecutan ninguna operación. Se cancela el envío
-       para no recargar la página, mientras que la validación nativa del
-       navegador (required, type, min, max) sigue funcionando.
-       Los formularios de autenticación sí se envían al backend Laravel. */
-    $$('form:not(#frm-login):not(#frm-registro):not(#frm-ingreso-inicial):not(#frm-logout)').forEach(function (form) {
-        form.addEventListener('submit', function (evento) {
-            evento.preventDefault();
-        });
+    /* ---------- 3. Formularios visuales sin backend ---------- */
+    /* Solo se cancela el envío de los formularios que aún no tienen una acción
+       conectada (los antiguos actions/*.php de módulos no implementados).
+       Los formularios de autenticación y de movimientos/categorías/presupuestos
+       sí se envían al backend Laravel. */
+    $$('form').forEach(function (form) {
+        var accion = form.getAttribute('action') || '';
+        if (accion === '' || accion.indexOf('actions/') !== -1) {
+            form.addEventListener('submit', function (evento) {
+                evento.preventDefault();
+            });
+        }
+    });
+
+    /* ---------- 4. Categorías compatibles con el tipo de movimiento ---------- */
+    var tipoMovimiento = $('#tipo');
+    var selectorCategoria = $('#id_categoria');
+
+    if (tipoMovimiento && selectorCategoria) {
+        var filtrarCategorias = function () {
+            var tipo = tipoMovimiento.value;
+            $$('option', selectorCategoria).forEach(function (opcion) {
+                if (!opcion.value) {
+                    return;
+                }
+                var oculta = Boolean(tipo) && opcion.getAttribute('data-tipo') !== tipo;
+                opcion.hidden = oculta;
+                opcion.disabled = oculta;
+            });
+            var seleccionada = selectorCategoria.querySelector('option:checked');
+            if (seleccionada && seleccionada.hidden) {
+                selectorCategoria.value = '';
+            }
+        };
+        tipoMovimiento.addEventListener('change', filtrarCategorias);
+        filtrarCategorias();
+    }
+
+    /* ---------- 5. Acción dinámica de aportes y pagos ---------- */
+    var formulariosDinamicos = [
+        { form: '#frm-aporte', selector: '#id_meta' },
+        { form: '#frm-pago', selector: '#id_deuda' }
+    ];
+
+    formulariosDinamicos.forEach(function (config) {
+        var formulario = $(config.form);
+        var selector = $(config.selector);
+        if (!formulario || !selector) {
+            return;
+        }
+        var base = formulario.getAttribute('data-base') || '';
+        var actualizarAccion = function () {
+            if (selector.value && base.indexOf('__') !== -1) {
+                formulario.action = base.replace('__META__', selector.value).replace('__DEUDA__', selector.value);
+            }
+        };
+        selector.addEventListener('change', actualizarAccion);
+        actualizarAccion();
     });
 })();
