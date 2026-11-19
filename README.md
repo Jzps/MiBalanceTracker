@@ -2,7 +2,7 @@
 
 Aplicación web del **Sistema de Gestión Financiera Personal** organizada con **Laravel 11** sobre XAMPP (Apache y MySQL). Conserva el frontend visual existente y utiliza migraciones de Laravel para preparar la estructura de base de datos aprobada.
 
-> **Estado actual:** el proyecto cuenta con autenticación real (registro, login, logout), sesiones administradas por Laravel y protección de rutas, además de la configuración inicial obligatoria del ingreso fijo mensual. Los módulos **Movimientos, Categorías, Presupuestos, Metas/Fondo de emergencia, Aportes, Deudas y Pagos** son operativos. **Todavía no** se han implementado Dashboard, Análisis ni Distribución 50/30/20 funcionales. El historial técnico por fases está en `docs/fases.md`.
+> **Estado actual:** el proyecto cuenta con autenticación real (registro, login, logout), sesiones administradas por Laravel y protección de rutas, además de la configuración inicial obligatoria del ingreso fijo mensual. Los módulos **Movimientos, Categorías, Presupuestos, Metas/Fondo de emergencia, Aportes, Deudas y Pagos** son operativos. En la **Fase 6** también lo están **Dashboard, Análisis y Distribución 50/30/20**: sus consultas y cálculos se realizan sobre los registros existentes del usuario autenticado, y los porcentajes de la distribución se pueden modificar desde el formulario de la propia vista, validando que sumen exactamente 100 %. El historial técnico por fases está en `docs/fases.md`.
 
 ## Acceso a la aplicación
 

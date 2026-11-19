@@ -1,4 +1,3 @@
-```php
 <?php
 
 namespace App\Http\Controllers;
@@ -142,4 +141,3 @@ class DistribucionController extends Controller
             ->with('success', 'La distribución se actualizó correctamente.');
     }
 }
-```
