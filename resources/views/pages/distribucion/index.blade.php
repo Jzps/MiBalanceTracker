@@ -12,54 +12,80 @@
     </div>
 </section>
 
+@if(session('success'))
+    <div class="alerta alerta-exito" role="alert">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alerta alerta-error" role="alert">
+        @foreach($errors->all() as $error)
+            <p>{{ $error }}</p>
+        @endforeach
+    </div>
+@endif
+
 <div class="rejilla rejilla-2">
     <!-- RN-14: la distribución se presenta como referencia orientativa -->
     <section class="tarjeta">
         <h2>Tu referencia actual</h2>
-        <p class="campo-ayuda">Porcentajes de referencia del método 50/30/20.</p>
+        <p class="campo-ayuda">Porcentajes de referencia según tu configuración actual.</p>
 
         <div class="rejilla rejilla-3">
             <div class="mini-dato">
                 <span class="mini-dato-etiqueta">Necesidades</span>
-                <strong>50 %</strong>
+                <strong>{{ $porcentajeNecesidades }} %</strong>
+                <p class="kpi-pie">$ {{ number_format($referenciaNecesidades, 0, ',', '.') }}</p>
             </div>
+
             <div class="mini-dato">
                 <span class="mini-dato-etiqueta">Deseos</span>
-                <strong>30 %</strong>
+                <strong>{{ $porcentajeDeseos }} %</strong>
+                <p class="kpi-pie">$ {{ number_format($referenciaDeseos, 0, ',', '.') }}</p>
             </div>
+
             <div class="mini-dato">
                 <span class="mini-dato-etiqueta">Ahorro</span>
-                <strong>20 %</strong>
+                <strong>{{ $porcentajeAhorro }} %</strong>
+                <p class="kpi-pie">$ {{ number_format($referenciaAhorro, 0, ',', '.') }}</p>
             </div>
         </div>
 
         <p class="pie-tabla">
-            El ingreso fijo mensual se configura en
-            <a href="index.php?page=configuracion">Configuración</a>.
+            Ingreso fijo mensual: $ {{ number_format($ingresoFijo, 0, ',', '.') }}.
+            El ingreso fijo se configura en
+            <a href="{{ route('configuracion') }}">Configuración</a>.
         </p>
     </section>
 
     <!-- RF-24: personalización de la distribución -->
     <section class="tarjeta">
         <h2>Personalizar porcentajes</h2>
-        <form class="formulario" action="actions/distribucion.php" method="post">
-            <input type="hidden" name="accion" value="guardar_distribucion">
+
+        <form class="formulario" action="{{ route('distribucion.actualizar') }}" method="POST">
+            @csrf
 
             <div class="rejilla rejilla-3 rejilla-ajustada">
                 <div class="campo">
                     <label for="porcentaje_necesidades">Necesidades %</label>
                     <input type="number" id="porcentaje_necesidades" name="porcentaje_necesidades"
-                           min="0" max="100" step="1" required value="50">
+                           min="0" max="100" step="0.01" required
+                           value="{{ old('porcentaje_necesidades', $porcentajeNecesidades) }}">
                 </div>
+
                 <div class="campo">
                     <label for="porcentaje_deseos">Deseos %</label>
                     <input type="number" id="porcentaje_deseos" name="porcentaje_deseos"
-                           min="0" max="100" step="1" required value="30">
+                           min="0" max="100" step="0.01" required
+                           value="{{ old('porcentaje_deseos', $porcentajeDeseos) }}">
                 </div>
+
                 <div class="campo">
                     <label for="porcentaje_ahorro">Ahorro %</label>
                     <input type="number" id="porcentaje_ahorro" name="porcentaje_ahorro"
-                           min="0" max="100" step="1" required value="20">
+                           min="0" max="100" step="0.01" required
+                           value="{{ old('porcentaje_ahorro', $porcentajeAhorro) }}">
                 </div>
             </div>
 
@@ -72,14 +98,42 @@
     </section>
 </div>
 
-<!-- Espacio reservado para comparar la referencia con los gastos reales -->
+<!-- RF-23: comparación entre la referencia y los gastos reales -->
 <section class="tarjeta">
     <h2>Referencia vs. gasto real</h2>
-    <ul class="lista-progreso">
-    </ul>
-    <div class="estado-vacio">
-        <h3>No hay datos registrados</h3>
-        <p>Aún no hay gastos registrados.</p>
-    </div>
+
+    @if($comparacion->isNotEmpty())
+        <ul class="lista-progreso">
+            @foreach($comparacion as $item)
+                <li class="mini-dato">
+                    <span class="mini-dato-etiqueta">
+                        {{ $item['nombre'] }} ({{ $item['porcentaje'] }} %)
+                    </span>
+
+                    <strong>
+                        $ {{ number_format($item['real'], 0, ',', '.') }}
+                        / $ {{ number_format($item['referencia'], 0, ',', '.') }}
+                    </strong>
+
+                    <p class="kpi-pie">
+                        Diferencia: $ {{ number_format($item['diferencia'], 0, ',', '.') }}
+                    </p>
+
+                    <div class="barra-progreso">
+                        <div class="barra-progreso-valor" style="width: {{ $item['anchoBarra'] }}%"></div>
+                    </div>
+
+                    <p class="kpi-pie">
+                        {{ $item['porcentajeUtilizado'] }} % de la referencia utilizada
+                    </p>
+                </li>
+            @endforeach
+        </ul>
+    @else
+        <div class="estado-vacio">
+            <h3>No hay datos registrados</h3>
+            <p>Aún no hay gastos registrados.</p>
+        </div>
+    @endif
 </section>
 @endsection

@@ -350,6 +350,65 @@ Las metas/aportes y deudas/pagos quedan disponibles para que Dashboard, Análisi
 
 ---
 
+## Fase 6 — Integrar cálculos y consultas
+
+Esta fase conecta los datos ya registrados por las fases anteriores con los tres módulos de consulta. No incorpora nuevas tablas, modelos ni reglas de negocio: solo consulta y presenta información, con la única excepción del formulario de porcentajes de Distribución, que actualiza tres columnas de `usuario`.
+
+### A. Corrección inicial
+
+`App\Http\Controllers\DistribucionController` contenía un fence Markdown de apertura (`php`) como primera línea y otro de cierre al final del archivo. Ese carácter `` ` `` producía `ParseError: syntax error, unexpected token "`"` en la línea 145 y hacía que `/distribucion` respondiera 500. Se eliminaron **únicamente esas dos líneas**; la lógica del controlador quedó intacta. Tras el cambio, `php -l` devuelve `No syntax errors detected` y las dos rutas (`distribucion` y `distribucion.actualizar`) aparecen en `php artisan route:list`.
+
+### B. Responsabilidad de cada controlador
+
+| Controlador | Responsabilidad |
+|---|---|
+| `DashboardController@index` | Resumen del mes actual del usuario autenticado. |
+| `AnalisisController@index` | Estadísticas de los últimos tres meses naturales y comparación mensual. |
+| `DistribucionController@index` | Referencias 50/30/20 y comparación con valores reales del mes. |
+| `DistribucionController@actualizar` | Validación y guardado de los tres porcentajes del usuario. |
+
+### C. Consultas y cálculos
+
+**Dashboard** (`resources/views/pages/dashboard/index.blade.php`):
+
+- `ingreso_fijo_mensual` se lee de `Auth::user()` y se mantiene en la variable `$ingresoFijo`, separada de `$ingresosAdicionales` (suma de `movimiento.tipo = ingreso` del mes). `$ingresos` es la suma de ambos, `$gastos` la suma de `movimiento.tipo = gasto` del mes y `$disponible = $ingresos - $gastos`.
+- `$ahorro` suma `aporte_ahorro.monto` del mes a través de la relación `metaAhorro.id_usuario = Auth::id()`; los aportes no se cuentan como gastos.
+- Los indicadores existentes de presupuestos y metas se calculan en memoria: gasto por categoría entre `fecha_inicio` y `fecha_fin` de cada presupuesto; acumulado, pendiente y progreso de cada meta con `aportes`. No se consultan deudas porque la vista no tiene ningún indicador de deudas.
+- Se listan los cinco últimos movimientos del usuario con su categoría.
+- La sección de distribución usa `ingreso_fijo_mensual` y los tres porcentajes del usuario para mostrar solo valores de **referencia**, sin guardarlos.
+
+**Análisis** (`resources/views/pages/analisis/index.blade.php`):
+
+- Rango: desde el inicio del mes `Carbon::now() - 2 meses` hasta el fin del mes actual. Solo `movimiento` filtrado por `Auth::id()` y ese rango de fechas.
+- Totales de ingresos, gastos y `$ahorro = $ingresos - $gastos`, calculados sobre la colección recuperada.
+- `$gastosPorCategoria` agrupa los gastos por `categoria.nombre` (con `with('categoria')`), ordena por total descendente y calcula el porcentaje de cada barra respecto al mayor total; `$evolucionGastos` y `$comparacionMensual` recorren exactamente los tres meses del rango y filtran por `fecha.format('Y-m')`.
+- No se escribe ningún cálculo en la base de datos.
+
+**Distribución 50/30/20** (`resources/views/pages/distribucion/index.blade.php`):
+
+- Porcentajes desde `usuario.porcentaje_necesidades`, `porcentaje_deseos` y `porcentaje_ahorro`; referencias = `ingreso_fijo_mensual * porcentaje / 100`.
+- Valores reales del mes: gastos filtrados por `categoria.clasificacion_503020 = necesidad|deseo` y aportes del usuario vía `AporteAhorro` y `MetaAhorro`. Los gastos y los aportes se mantienen en variables separadas.
+- `$comparacion` entrega a la vista nombre, porcentaje, referencia, real, diferencia, porcentaje utilizado y ancho de barra para cada uno de los tres conceptos.
+- `actualizar()` valida que cada porcentaje sea `numeric`, `0..100` y que la suma redondeada a dos decimales sea exactamente `100.00`. Si falla, lanza `ValidationException` antes de tocar el modelo, por lo que la configuración previa permanece igual. No modifica movimientos ni datos históricos.
+
+### D. Integración y aislamiento
+
+Todas las consultas usan `Auth::id()` directamente o `whereHas('metaAhorro', ... id_usuario ...)`, nunca parámetros de la petición. Las relaciones reutilizadas son `Movimiento::categoria`, `Presupuesto::categoria`, `MetaAhorro::aportes` y `AporteAhorro::metaAhorro`; no se crearon relaciones nuevas ni se modificaron modelos. Los datos de Dashboard, Análisis y Distribución coinciden con los registros de las fases 2, 4 y 5.
+
+### E. Pruebas realizadas
+
+Se añadieron 15 pruebas de característica en `tests/Feature/Dashboard`, `tests/Feature/Analisis` y `tests/Feature/Distribucion`, sobre la base aislada `sistema_gestion_financiera_auth_test`:
+
+- **Dashboard (5):** totales, saldos y aportes del mes; separación de ingreso fijo e ingresos adicionales; meses sin movimientos; cálculo de presupuestos y metas; aislamiento entre usuarios.
+- **Análisis (4):** totales y agrupación por categoría; comparación de los tres periodos con importes distintos; gráficos sin datos; aislamiento entre usuarios.
+- **Distribución (6):** referencias con porcentajes personalizados; actualización que cambia referencias sin tocar movimientos; rechazo de suma distinta de 100; rechazo de valores fuera de rango; aportes no contabilizados como gastos ni generadores de movimientos; aislamiento entre usuarios.
+
+Resultado: **15 pruebas, 103 aserciones, todas pasan**. La suite completa queda en **107 pruebas, 561 aserciones, todas pasan**, sin regresiones en las fases 1 a 5.
+
+**Comprobación desde Apache/XAMPP (`http://localhost/MiBalanceTracker/`):** usando un usuario temporal creado solo para la verificación y eliminado al terminar (la cuenta ajena preexistente no se modificó), las tres pestañas devolvieron `200 OK` y mostraron sus encabezados y secciones. Desde el navegador HTTP se comprobó además que un envío con `50/30/21` mostraba el error de suma sin cambiar la configuración, y que `40/35/25` actualizaba las referencias a `$ 400`, `$ 350` y `$ 250`. No se realizó una inspección visual manual adicional más allá del contenido HTML verificado por HTTP.
+
+---
+
 ## Organización general actual
 
 ```text
@@ -357,7 +416,10 @@ app/
 ├── Http/
 │   ├── Controllers/
 │   │   ├── Controller.php
-│   │   └── Auth/AuthController.php
+│   │   ├── Auth/AuthController.php
+│   │   ├── DashboardController.php     # Fase 6
+│   │   ├── AnalisisController.php      # Fase 6
+│   │   └── DistribucionController.php  # Fase 6
 │   └── Middleware/Auth/EnsureIngresoFijoConfigurado.php
 └── Models/                 # Ocho modelos del esquema + User.php sin uso
 bootstrap/app.php           # Registro del alias de middleware
@@ -373,6 +435,9 @@ resources/views/
 └── pages/<modulo>/         # Vistas de los nueve módulos
 routes/web.php              # Rutas públicas, auth, configuración inicial y privadas
 tests/Feature/Auth/         # Pruebas de la Fase 3
+tests/Feature/Dashboard/    # Pruebas de la Fase 6
+tests/Feature/Analisis/     # Pruebas de la Fase 6
+tests/Feature/Distribucion/ # Pruebas de la Fase 6
 ```
 
 ## Relación entre componentes
@@ -386,4 +451,4 @@ tests/Feature/Auth/         # Pruebas de la Fase 3
 
 ## Fases posteriores
 
-El desarrollo continuará según el plan acordado. Las siguientes fases se documentarán aquí cuando se implementen y verifiquen; mientras tanto no se presentan como terminadas.
+La Fase 6 quedó documentada y verificada arriba. El desarrollo continuará según el plan acordado: las fases posteriores se documentarán aquí cuando se implementen y verifiquen; mientras tanto no se presentan como terminadas.

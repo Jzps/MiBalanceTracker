@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\AnalisisController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DeudaController;
 use App\Http\Controllers\MetaController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DistribucionController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\PresupuestoController;
@@ -51,12 +54,7 @@ Route::middleware('auth')->group(function () {
 | ingreso.configurado: exige el ingreso fijo mensual configurado.
 */
 Route::middleware(['auth', EnsureIngresoFijoConfigurado::class])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('pages.dashboard.index', [
-            'tituloPagina' => 'Dashboard',
-            'paginaActiva' => 'dashboard',
-        ]);
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Movimientos y categorías (la administración de categorías vive en la vista de movimientos).
     Route::get('/movimientos', [MovimientoController::class, 'index'])->name('movimientos');
@@ -88,12 +86,7 @@ Route::middleware(['auth', EnsureIngresoFijoConfigurado::class])->group(function
     Route::delete('/deudas/{deuda}', [DeudaController::class, 'destroy'])->name('deudas.destroy');
     Route::post('/deudas/{deuda}/pagos', [DeudaController::class, 'storePago'])->name('pagos.store');
 
-    Route::get('/analisis', function () {
-        return view('pages.analisis.index', [
-            'tituloPagina' => 'Análisis',
-            'paginaActiva' => 'analisis',
-        ]);
-    })->name('analisis');
+    Route::get('/analisis', [AnalisisController::class, 'index'])->name('analisis');
 
     Route::get('/educacion', function () {
         return view('pages.educacion.index', [
@@ -102,12 +95,9 @@ Route::middleware(['auth', EnsureIngresoFijoConfigurado::class])->group(function
         ]);
     })->name('educacion');
 
-    Route::get('/distribucion', function () {
-        return view('pages.distribucion.index', [
-            'tituloPagina' => '50/30/20',
-            'paginaActiva' => 'distribucion',
-        ]);
-    })->name('distribucion');
+    Route::get('/distribucion', [DistribucionController::class, 'index'])->name('distribucion');
+
+    Route::post('/distribucion', [DistribucionController::class, 'actualizar'])->name('distribucion.actualizar');
 
     Route::get('/configuracion', function () {
         return view('pages.configuracion.index', [
